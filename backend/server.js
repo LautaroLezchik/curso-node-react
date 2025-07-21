@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 3001;
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes'); // Import auth routes
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+const { protect } = require('./middleware/authMiddleware');
 
 // Connect to database
 connectDB();
@@ -14,7 +15,22 @@ connectDB();
 app.use(express.json());
 
 // Mount auth routes
-app.use('/api/auth', authRoutes); // All routes in authRoutes.js will be prefixed with /api/auth
+app.use('/api/auth', authRoutes); 
+
+// --- Example of a Protected Route (for testing purposes) ---
+// You can remove this after testing, or keep it as a placeholder
+app.get('/api/protected', protect, (req, res) => {
+    // If we reach here, the user is authenticated, and req.user is available
+    res.json({
+        message: 'You accessed a protected route!',
+        user: {
+            _id: req.user._id,
+            username: req.user.username,
+            email: req.user.email
+        }
+    });
+});
+// -------------------------------------------------------------
 
 // Error Handling Middleware (MUST be after all routes)
 app.use(notFound);
