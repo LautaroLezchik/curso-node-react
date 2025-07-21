@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const PORT = process.env.PORT || 3001;
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes'); 
@@ -11,6 +12,13 @@ const { protect } = require('./middleware/authMiddleware');
 
 // Connect to database
 connectDB();
+
+app.use(cors({
+    origin: 'http://localhost:3000', // Allow only your frontend's origin
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow specific HTTP methods
+    credentials: true, // Allow cookies to be sent (if you were using sessions/cookies)
+    optionsSuccessStatus: 204 // Respond with 204 for preflight OPTIONS requests
+}));
 
 // Middleware to parse JSON
 app.use(express.json());

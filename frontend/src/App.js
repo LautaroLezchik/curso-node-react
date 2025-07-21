@@ -9,6 +9,9 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import UserSettingsPage from './pages/UserSettingsPage';
 
+// Import your PrivateRoute component
+import PrivateRoute from './components/PrivateRoute';
+
 function App() {
   return (
     <Router>
@@ -23,9 +26,11 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
-            {/* Protected Routes (we'll implement the PrivateRoute component soon) */}
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/settings" element={<UserSettingsPage />} />
+            {/* Protected Routes */}
+            <Route element={<PrivateRoute />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/settings" element={<UserSettingsPage />} />
+            </Route>
           </Routes>
         </div>
       </AuthProvider>
