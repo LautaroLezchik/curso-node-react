@@ -2,7 +2,25 @@
 
 This is a full-stack web application designed to help users manage their personal libraries. Users can register, log in, view their list of books (read and unread), add new books, mark books as read, and delete books.
 
+## Disclamer
 
+Esta app, como entregable del curso de Node-React fué hecha (notoriamente) con (mucha) ayuda de Gemini IA.
+Obviamente que hubiera sido más educativo poder escribirla completamente a mano, pero no pude dedicarle el tiempo para lograrlo de esa manera.
+Es verdad que hoy en día la mayoría de estas aplicaciones se construyend de esta manera, pero está bueno entender las razones del funcionamiento del código.
+Actualmente trabajo en un proyecto fullStack con Next.js, por lo que estos conceptos los estoy aprendiendo con el uso.
+Ya tengo 3 años de experiencia con React, pero me faltaba entender Node, y más allá de que los métodos los estoy usando en el proyecto en el que trabajo, este curso me fué MUY ÚTIL para entender:
+- Dependencias
+- Middlewears
+- Tokens
+- Rutas protegidas
+- Manejo de volumen de queries.
+
+Como la parte front la entiendo más, es que dejé los css como objeto en el mismo código, sin tener una hoja de estilos dedicada.
+Me centré más en el backend, y en poder probar con Postman las API. Eso me sirvió mucho.
+
+Gracias por la claridad de las explicaciones!!
+
+---
 
 ## Overview
 
