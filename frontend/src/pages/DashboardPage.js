@@ -4,9 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 // CORRECTED PATHS for components
-// From DashboardPage.js (in pages/), go up one level (..) to src/, then into 'components/'
-import BookList from '../components/BookList';     // <--- THIS IS THE FIX
-import AddBookForm from '../components/AddBookForm'; // <--- THIS IS THE FIX
+import BookList from '../components/BookList';     
+import AddBookForm from '../components/AddBookForm'; 
 
 // Base URL for your backend API
 const API_URL = 'http://localhost:5000/api/books/';
@@ -143,7 +142,6 @@ const DashboardPage = () => {
       </div>
 
       <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
-      <Link to="/settings" style={styles.settingsLink}>Go to User Settings</Link>
     </div>
   );
 };
