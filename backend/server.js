@@ -4,7 +4,8 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const connectDB = require('./config/db');
-const authRoutes = require('./routes/authRoutes'); // Import auth routes
+const authRoutes = require('./routes/authRoutes'); 
+const bookRoutes = require('./routes/bookRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const { protect } = require('./middleware/authMiddleware');
 
@@ -16,6 +17,9 @@ app.use(express.json());
 
 // Mount auth routes
 app.use('/api/auth', authRoutes); 
+
+// Protected Book Routes
+app.use('/api/books', bookRoutes);
 
 // --- Example of a Protected Route (for testing purposes) ---
 // You can remove this after testing, or keep it as a placeholder
