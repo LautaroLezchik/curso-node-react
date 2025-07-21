@@ -10,7 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import UserSettingsPage from './pages/UserSettingsPage';
 
 // Import your PrivateRoute component
-import PrivateRoute from './components/PrivateRoute';
+import PrivateRoute from './components/PrivateRoute'
 
 function App() {
   return (

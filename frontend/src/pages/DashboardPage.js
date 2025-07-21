@@ -1,44 +1,117 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import the AuthContext
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+
+// CORRECTED PATHS for components
+// From DashboardPage.js (in pages/), go up one level (..) to src/, then into 'components/'
+import BookList from '../components/BookList';     // <--- THIS IS THE FIX
+import AddBookForm from '../components/AddBookForm'; // <--- THIS IS THE FIX
+
+// Base URL for your backend API
+const API_URL = 'http://localhost:5000/api/books/';
 
 const DashboardPage = () => {
-  const { user, isAuthenticated, logout, loading } = useAuth(); // Get user, auth status, logout function from context
+  const { user, isAuthenticated, token, logout, loading } = useAuth();
   const navigate = useNavigate();
-  const [welcomeMessage, setWelcomeMessage] = useState('Loading dashboard...');
+  const [books, setBooks] = useState([]);
+  const [dashboardMessage, setDashboardMessage] = useState('Loading dashboard...');
+  const [error, setError] = useState('');
+
+  const fetchBooks = useCallback(async () => {
+    if (!token) return;
+
+    setError('');
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.get(API_URL, config);
+      setBooks(response.data);
+    } catch (err) {
+      console.error('Failed to fetch books:', err.response ? err.response.data : err.message);
+      setError(err.response?.data?.message || 'Failed to load books. Please try again.');
+      if (err.response?.status === 401) {
+        logout();
+      }
+    }
+  }, [token, logout]);
 
   useEffect(() => {
-    // If auth context is still loading, do nothing yet
     if (loading) {
-      setWelcomeMessage('Loading user data...');
+      setDashboardMessage('Loading user data...');
       return;
     }
 
-    // If not authenticated after loading, redirect to login
     if (!isAuthenticated) {
       navigate('/login');
     } else {
-      // If authenticated, set a welcome message
-      setWelcomeMessage(`Welcome, ${user?.username || user?.email}!`);
+      setDashboardMessage(`Welcome, ${user?.username || user?.email}!`);
+      fetchBooks();
     }
-  }, [isAuthenticated, loading, navigate, user]); // Depend on isAuthenticated, loading, navigate, and user
+  }, [isAuthenticated, loading, navigate, user, fetchBooks]);
 
+  const handleDeleteBook = async (bookId) => {
+    setError('');
+    if (window.confirm('Are you sure you want to delete this book?')) {
+      try {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        await axios.delete(`${API_URL}${bookId}`, config);
+        setBooks(books.filter((book) => book._id !== bookId));
+      } catch (err) {
+        console.error('Failed to delete book:', err.response ? err.response.data : err.message);
+        setError(err.response?.data?.message || 'Failed to delete book.');
+        if (err.response?.status === 401) {
+          logout();
+        }
+      }
+    }
+  };
+
+  const handleToggleRead = async (bookId, currentReadStatus) => {
+    setError('');
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      };
+      const response = await axios.put(`${API_URL}${bookId}`, { read: currentReadStatus }, config);
+      setBooks(books.map((book) => (book._id === bookId ? response.data : book)));
+    } catch (err) {
+      console.error('Failed to update book status:', err.response ? err.response.data : err.message);
+      setError(err.response?.data?.message || 'Failed to update book status.');
+      if (err.response?.status === 401) {
+        logout();
+      }
+    }
+  };
+
+  const handleBookAdded = (newBook) => {
+    setBooks((prevBooks) => [newBook, ...prevBooks]);
+  };
+
+  // Ensure handleLogout is explicitly defined within the component scope
   const handleLogout = () => {
-    logout(); // Call the logout function from the AuthContext
+    logout();
   };
 
   if (loading) {
     return (
       <div style={styles.container}>
-        <h2>{welcomeMessage}</h2>
+        <h2>{dashboardMessage}</h2>
         <p>Please wait...</p>
       </div>
     );
   }
 
-  // If not authenticated, the useEffect hook will redirect,
-  // but as a fallback or while redirect is happening:
   if (!isAuthenticated) {
     return (
       <div style={styles.container}>
@@ -48,23 +121,25 @@ const DashboardPage = () => {
     );
   }
 
-  // Render the dashboard content for authenticated users
   return (
     <div style={styles.container}>
-      <h2>{welcomeMessage}</h2>
+      <h2>{dashboardMessage}</h2>
       <p style={styles.subtitle}>Your personal book library awaits!</p>
 
-      {/* Placeholder for Book List and Add Book Form */}
-      <div style={styles.section}>
-        <h3>Your Books</h3>
-        <p>Books will be listed here soon...</p>
-        {/* <BookList /> will go here */}
-      </div>
+      {error && <p style={styles.errorMessage}>{error}</p>}
 
       <div style={styles.section}>
         <h3>Add New Book</h3>
-        <p>Add new book form will go here soon...</p>
-        {/* <AddBookForm /> will go here */}
+        <AddBookForm onBookAdded={handleBookAdded} />
+      </div>
+
+      <div style={styles.section}>
+        <h3>Your Books</h3>
+        <BookList
+          books={books}
+          onDeleteBook={handleDeleteBook}
+          onToggleRead={handleToggleRead}
+        />
       </div>
 
       <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
@@ -72,6 +147,8 @@ const DashboardPage = () => {
     </div>
   );
 };
+
+// ... (styles object remains the same)
 
 // Basic inline styles (consider moving to CSS file for larger projects)
 const styles = {
@@ -100,7 +177,7 @@ const styles = {
     textAlign: 'left',
   },
   logoutButton: {
-    backgroundColor: '#dc3545', // Red for logout
+    backgroundColor: '#dc3545',
     color: 'white',
     padding: '10px 20px',
     border: 'none',
@@ -110,9 +187,6 @@ const styles = {
     marginTop: '30px',
     marginRight: '15px',
     transition: 'background-color 0.3s ease',
-  },
-  logoutButtonHover: {
-    backgroundColor: '#c82333',
   },
   settingsLink: {
     backgroundColor: '#007bff',
@@ -125,9 +199,15 @@ const styles = {
     marginLeft: '15px',
     transition: 'background-color 0.3s ease',
   },
-  settingsLinkHover: {
-    backgroundColor: '#0056b3',
-  }
+  errorMessage: {
+    color: 'red',
+    backgroundColor: '#ffe0e0',
+    border: '1px solid #ff0000',
+    padding: '10px',
+    borderRadius: '5px',
+    marginBottom: '20px',
+    textAlign: 'center',
+  },
 };
 
 export default DashboardPage;
